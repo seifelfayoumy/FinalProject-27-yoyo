@@ -42,4 +42,9 @@ public class TransactionController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
+
+    @PostMapping("/{id}/pay")
+    public Transaction pay(@PathVariable Long id) {
+        return service.processPayment(id);
+    }
 }
