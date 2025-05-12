@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: transactions_db
+      POSTGRES_USER: tx_user
+      POSTGRES_PASSWORD: tx_pw
+    ports:
+      - "5432:5432"
+
+  transactions:
+    build:
+      context: .
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transactions_db
+      SPRING_DATASOURCE_USERNAME: tx_user
+      SPRING_DATASOURCE_PASSWORD: tx_pw
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+    ports:
+      - "8082:8082"
