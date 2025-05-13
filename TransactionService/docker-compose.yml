@@ -15,10 +15,5 @@ services:
       context: .
     depends_on:
       - postgres
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transactions_db
-      SPRING_DATASOURCE_USERNAME: tx_user
-      SPRING_DATASOURCE_PASSWORD: tx_pw
-      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
     ports:
-      - "8082:8082"
+      - "8082:8080"
