@@ -17,7 +17,12 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.status(HttpStatus.OK).body("success");
+    }
+
+    @PostMapping("")
     public ResponseEntity<UserModel> createUser(@RequestBody UserModel user) {
         UserModel createdUser = userService.createUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
