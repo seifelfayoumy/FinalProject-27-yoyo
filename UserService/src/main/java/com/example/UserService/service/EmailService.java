@@ -56,14 +56,25 @@ public class EmailService {
     }
 
     private void sendHtmlEmail(String toEmail, String subject, String htmlContent) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        helper.setFrom(fromEmail);
-        helper.setTo(toEmail);
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
 
-        mailSender.send(message);
+            mailSender.send(message);
+            System.out.println("Email sent successfully to: " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("Failed to send email to " + toEmail + ": " + e.getMessage());
+            // For Gmail auth issues, provide a more helpful message
+            if (e.getMessage() != null && e.getMessage().contains("Authentication failed")) {
+                System.err.println("Gmail authentication failed. If using Gmail, you likely need to use an App Password. " +
+                        "See https://support.google.com/accounts/answer/185833 for more information.");
+            }
+            throw e;
+        }
     }
 }

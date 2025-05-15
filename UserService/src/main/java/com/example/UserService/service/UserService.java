@@ -49,9 +49,10 @@ public class UserService {
         // Send verification email
         try {
             emailService.sendVerificationEmail(user.getEmail(), token);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             // Log the error but continue - we don't want to roll back the user creation
             System.err.println("Failed to send verification email: " + e.getMessage());
+            // We're intentionally catching all exceptions here to ensure user creation completes
         }
         
         return savedUser;
@@ -60,6 +61,10 @@ public class UserService {
     public UserModel getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+    }
+    
+    public Optional<UserModel> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
     
     @Transactional
@@ -180,6 +185,11 @@ public class UserService {
             System.err.println("Failed to send password reset email: " + e.getMessage());
             throw new RuntimeException("Failed to send password reset email", e);
         }
+    }
+    
+    public boolean isValidPasswordResetToken(String token) {
+        // Validate token and check if it's for password reset purpose
+        return jwtTokenProvider.validateTokenForPurpose(token, "password_reset");
     }
     
     @Transactional
