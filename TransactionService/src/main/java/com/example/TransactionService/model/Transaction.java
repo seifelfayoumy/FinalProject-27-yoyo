@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.misc.NotNull;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "transactions")
@@ -27,6 +28,11 @@ public class Transaction {
     private Instant createdAt;
     private Instant updatedAt;
     private String paymentMethod;
+    
+    @ElementCollection
+    @CollectionTable(name = "transaction_products", 
+                    joinColumns = @JoinColumn(name = "transaction_id"))
+    private List<String> products; // Format: "ProductID-quantity"
 
     @PrePersist
     void onInsert() { createdAt = Instant.now(); }
