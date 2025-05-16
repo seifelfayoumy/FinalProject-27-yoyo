@@ -26,6 +26,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/users/test").permitAll()
                 .requestMatchers("/api/users/login").permitAll()
                 .requestMatchers("/api/users/verify").permitAll()
+                .requestMatchers("/api/users/validate-token").permitAll()
                 .requestMatchers("/api/users/request-password-reset").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/reset-password").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/reset-password").permitAll()
