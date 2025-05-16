@@ -2,6 +2,7 @@ package com.example.UserService.controller;
 
 import com.example.UserService.model.UserModel;
 import com.example.UserService.service.UserService;
+import com.example.UserService.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/test")
     public ResponseEntity<String> test() {
@@ -310,5 +312,47 @@ public class UserController {
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
+    }
+
+    @GetMapping("/validate-token")
+    public ResponseEntity<Map<String, Object>> validateToken(@RequestParam String token) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            if (token == null || token.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Token is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Validate the token
+            if (!jwtTokenProvider.validateToken(token)) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // Extract user information from token
+            String email = jwtTokenProvider.getEmailFromToken(token);
+            Long userId = jwtTokenProvider.getUserIdFromToken(token);
+            
+            // Verify the user exists
+            Optional<UserModel> userOpt = userService.getUserByEmail(email);
+            if (userOpt.isEmpty() || !userOpt.get().getId().equals(userId)) {
+                response.put("success", false);
+                response.put("message", "User not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            
+            response.put("success", true);
+            response.put("userId", userId);
+            response.put("email", email);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error validating token: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }
