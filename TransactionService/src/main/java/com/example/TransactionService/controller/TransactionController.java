@@ -60,4 +60,10 @@ public class TransactionController {
     public Transaction pay(@PathVariable Long id) {
         return service.processPayment(id);
     }
+        @PostMapping("/{id}/refund")
+    public Transaction refund(@PathVariable Long id) {
+        return service.refund(id);
+    }
+
+
 }
