@@ -16,7 +16,7 @@ public class EmailService implements AdminEventListener {
     @Override
     public void onAdminCreated(Admin admin) {
         sendEmail(
-            admin.getUsername(),
+            admin.getEmail(),
             "Welcome to Walmart Admin System",
             "Dear " + admin.getUsername() + ",\n\n" +
             "Your admin account has been created successfully.\n" +
@@ -28,7 +28,7 @@ public class EmailService implements AdminEventListener {
     @Override
     public void onAdminDeleted(Admin admin) {
         sendEmail(
-            admin.getUsername(),
+            admin.getEmail(),
             "Walmart Admin Account Deleted",
             "Dear " + admin.getUsername() + ",\n\n" +
             "Your admin account has been deleted.\n" +
@@ -40,7 +40,7 @@ public class EmailService implements AdminEventListener {
     @Override
     public void onAdminPasswordChanged(Admin admin) {
         sendEmail(
-            admin.getUsername(),
+            admin.getEmail(),
             "Walmart Admin Password Changed",
             "Dear " + admin.getUsername() + ",\n\n" +
             "Your admin account password has been changed.\n" +
