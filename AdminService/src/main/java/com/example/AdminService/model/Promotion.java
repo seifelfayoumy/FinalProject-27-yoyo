@@ -15,6 +15,6 @@ public class Promotion {
     /**
      * ENUM: e.g. PERCENTAGE, FIXED_AMOUNT, BOGO, FLASH_SALE
      */
-    private PromotionType type;
+    //private PromotionType type;
 
 }
