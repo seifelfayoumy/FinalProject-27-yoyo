@@ -64,5 +64,20 @@ public class TransactionService {
         strategy.pay(tx);
         return repo.save(tx);
     }
+      public Transaction refund(Long id) {
+        Transaction tx = repo.findById(id).orElseThrow();
+
+        if (!"PAID".equalsIgnoreCase(tx.getStatus())) {
+            throw new IllegalStateException("Only PAID transactions can be refunded.");
+        }
+
+        PaymentStrategy strategy = paymentStrategies.getOrDefault(tx.getPaymentMethod(), paymentStrategies.get("CARD"));
+
+        strategy.refund(tx);
+        tx.setStatus("REFUNDED");
+
+        return repo.save(tx);
+    }
+
 }
 
