@@ -65,5 +65,13 @@ public class TransactionController {
         return service.refund(id);
     }
 
+    @GetMapping("/user/{userId}")
+    public List<Transaction> getUserTransactions(@PathVariable Long userId) {
+        return service.getTransactionsByUser(userId);
+    }
 
+    @GetMapping("/order/{orderId}")
+    public List<Transaction> getOrderTransactions(@PathVariable Long orderId) {
+        return service.getTransactionsByOrder(orderId);
+    }
 }

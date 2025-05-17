@@ -78,6 +78,13 @@ public class TransactionService {
 
         return repo.save(tx);
     }
+    
+    public List<Transaction> getTransactionsByUser(Long userId) {
+        return repo.findByUserId(userId);
+    }
 
+    public List<Transaction> getTransactionsByOrder(Long orderId) {
+        return repo.findByOrderId(orderId);
+    }
 }
 
