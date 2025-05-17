@@ -10,6 +10,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.TransactionService.client.TokenValidationResponse;
 import com.example.TransactionService.client.UserClient;
+import com.example.TransactionService.command.CommandInvoker;
+import com.example.TransactionService.command.ViewOrderHistoryCommand;
 import com.example.TransactionService.model.Transaction;
 import com.example.TransactionService.repository.TransactionRepository;
 import com.example.TransactionService.strategy.PaymentStrategy;
@@ -25,6 +27,8 @@ public class TransactionService {
     private final TransactionRepository repo;
     private final UserClient userClient;
     private final Map<String, PaymentStrategy> paymentStrategies;
+    private final CommandInvoker commandInvoker;
+    private final ViewOrderHistoryCommand viewOrderHistoryCommand;
 
     public Transaction create(Transaction tx) {
         // Get the token from Authorization header
@@ -133,6 +137,23 @@ public class TransactionService {
 
     public List<Transaction> getTransactionsByOrder(Long orderId) {
         return repo.findByOrderId(orderId);
+    }
+
+    public List<Transaction> getUserOrderHistory(Long userId) {
+        // Get the token from Authorization header
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        String authHeader = request.getHeader("Authorization");
+        
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Authorization header with Bearer token is required");
+        }
+        
+        String token = authHeader.substring(7); // Remove "Bearer " prefix
+        
+        // Using Command pattern to fetch the user's order history
+        return commandInvoker.executeCommand(
+            viewOrderHistoryCommand.withParameters(userId, token)
+        );
     }
 }
 
