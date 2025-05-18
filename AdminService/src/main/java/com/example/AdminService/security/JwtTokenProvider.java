@@ -87,4 +87,39 @@ public class JwtTokenProvider {
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
+
+    public String createPasswordResetToken(String username) {
+        Claims claims = Jwts.claims().setSubject(username);
+        claims.put("type", "password_reset");
+        
+        Date now = new Date();
+        // Password reset tokens expire in 1 hour
+        Date validity = new Date(now.getTime() + 3600000);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String validatePasswordResetTokenAndGetUsername(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            // Verify this is a password reset token
+            if (!"password_reset".equals(claims.get("type"))) {
+                return null;
+            }
+
+            return claims.getSubject();
+        } catch (JwtException | IllegalArgumentException e) {
+            return null;
+        }
+    }
 } 

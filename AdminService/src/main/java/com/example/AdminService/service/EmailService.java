@@ -24,36 +24,36 @@ public class EmailService implements AdminEventListener, ProductStockEventListen
     @Override
     public void onAdminCreated(Admin admin) {
         sendEmail(
-                admin.getEmail(),
-                "Welcome to Walmart Admin System",
-                "Dear " + admin.getUsername() + ",\n\n" +
-                        "Your admin account has been created successfully.\n" +
-                        "Please keep your credentials safe.\n\n" +
-                        "Best regards,\nWalmart Admin Team"
+            admin.getEmail(),
+            "Welcome to Walmart Admin System",
+            "Dear " + admin.getUsername() + ",\n\n" +
+            "Your admin account has been created successfully.\n" +
+            "Please keep your credentials safe.\n\n" +
+            "Best regards,\nWalmart Admin Team"
         );
     }
 
     @Override
     public void onAdminDeleted(Admin admin) {
         sendEmail(
-                admin.getEmail(),
-                "Walmart Admin Account Deleted",
-                "Dear " + admin.getUsername() + ",\n\n" +
-                        "Your admin account has been deleted.\n" +
-                        "If this was not requested by you, please contact support immediately.\n\n" +
-                        "Best regards,\nWalmart Admin Team"
+            admin.getEmail(),
+            "Walmart Admin Account Deleted",
+            "Dear " + admin.getUsername() + ",\n\n" +
+            "Your admin account has been deleted.\n" +
+            "If this was not requested by you, please contact support immediately.\n\n" +
+            "Best regards,\nWalmart Admin Team"
         );
     }
 
     @Override
     public void onAdminPasswordChanged(Admin admin) {
         sendEmail(
-                admin.getEmail(),
-                "Walmart Admin Password Changed",
-                "Dear " + admin.getUsername() + ",\n\n" +
-                        "Your admin account password has been changed.\n" +
-                        "If this was not done by you, please contact support immediately.\n\n" +
-                        "Best regards,\nWalmart Admin Team"
+            admin.getEmail(),
+            "Walmart Admin Password Changed",
+            "Dear " + admin.getUsername() + ",\n\n" +
+            "Your admin account password has been changed.\n" +
+            "If this was not done by you, please contact support immediately.\n\n" +
+            "Best regards,\nWalmart Admin Team"
         );
     }
 
@@ -61,7 +61,7 @@ public class EmailService implements AdminEventListener, ProductStockEventListen
     public void onLowStock(Product product, int currentStock, int threshold) {
         List<Admin> admins = adminRepository.findAll();
         String subject = "Walmart Product Stock Alert: " + product.getName();
-        
+
         for (Admin admin : admins) {
             String message = String.format(
                 "Dear %s,\n\n" +
@@ -74,7 +74,7 @@ public class EmailService implements AdminEventListener, ProductStockEventListen
                 "Walmart Inventory System",
                 admin.getUsername(), product.getName(), currentStock, threshold
             );
-            
+
             sendEmail(admin.getEmail(), subject, message);
         }
     }
