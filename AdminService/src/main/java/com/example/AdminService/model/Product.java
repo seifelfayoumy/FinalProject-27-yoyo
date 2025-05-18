@@ -14,6 +14,7 @@ public class Product {
     private int quantity;
     private String description;
     private int stockThreshold;
+    private String category;
 
     // Constructors
     public Product() {
@@ -21,39 +22,43 @@ public class Product {
     }
 
     // Constructors without threshold
-    public Product(UUID id, String name, double price, int quantity, String description) {
+    public Product(UUID id, String name, double price, int quantity, String description, String category) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.quantity = quantity;
         this.description = description;
+        this.category = category;
     }
 
-    public Product(String name, double price, int quantity, String description) {
+    public Product(String name, double price, int quantity, String description, String category) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.price = price;
         this.quantity = quantity;
         this.description = description;
+        this.category = category;
     }
 
     // Constructors with threshold
-    public Product(UUID id, String name, double price, int quantity, String description, int stockThreshold) {
+    public Product(UUID id, String name, double price, int quantity, String description, int stockThreshold, String category) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.quantity = quantity;
         this.description = description;
         this.stockThreshold = stockThreshold;
+        this.category = category;
     }
 
-    public Product(String name, double price, int quantity, String description, int stockThreshold) {
+    public Product(String name, double price, int quantity, String description, int stockThreshold, String category) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.price = price;
         this.quantity = quantity;
         this.description = description;
         this.stockThreshold = stockThreshold;
+        this.category = category;
     }
 
     // Getters and Setters
@@ -74,4 +79,7 @@ public class Product {
 
     public int getStockThreshold() { return stockThreshold; }
     public void setStockThreshold(int stockThreshold) { this.stockThreshold = stockThreshold; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 }

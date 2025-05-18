@@ -6,6 +6,7 @@ public class ProductUpdateDTO {
     private Integer quantity;
     private String description;
     private Integer stockThreshold;
+    private String category;
 
     // Using wrapper classes (Double, Integer) instead of primitives (double, int)
     // so we can check if a field was included in the request
@@ -48,5 +49,13 @@ public class ProductUpdateDTO {
 
     public void setStockThreshold(Integer stockThreshold) {
         this.stockThreshold = stockThreshold;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 } 
