@@ -31,7 +31,12 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/admins/login", "/api/admins/register").permitAll()
+                        .requestMatchers(
+                            "/api/admins/login",
+                            "/api/admins/register",
+                            "/api/admins/forgot-password",
+                            "/api/admins/reset-password"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),

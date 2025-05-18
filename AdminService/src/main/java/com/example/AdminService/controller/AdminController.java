@@ -100,6 +100,58 @@ public class AdminController {
         }
     }
 
+    @PutMapping("/{id}/password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updatePassword(
+            @PathVariable UUID id,
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword) {
+        try {
+            if (newPassword == null || newPassword.isEmpty()) {
+                return ResponseEntity.badRequest().body("New password cannot be empty");
+            }
+            Admin updatedAdmin = adminService.updatePassword(id, currentPassword, newPassword);
+            return ResponseEntity.ok(updatedAdmin);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Error updating password: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/username")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUsername(
+            @PathVariable UUID id,
+            @RequestParam String currentPassword,
+            @RequestParam String newUsername) {
+        try {
+            return ResponseEntity.ok(adminService.updateUsername(id, currentPassword, newUsername));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Error updating username: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/email")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateEmail(
+            @PathVariable UUID id,
+            @RequestParam String currentPassword,
+            @RequestParam String newEmail) {
+        try {
+            return ResponseEntity.ok(adminService.updateEmail(id, currentPassword, newEmail));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Error updating email: " + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteAdmin(@PathVariable UUID id) {
@@ -112,6 +164,41 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                 .body("Error deleting admin: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        try {
+            adminService.initiatePasswordReset(email);
+            return ResponseEntity.ok()
+                .body("If an account exists with this email, a password reset link has been sent");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Error processing request: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestParam String token,
+            @RequestParam String newPassword) {
+        try {
+            if (newPassword == null || newPassword.isEmpty()) {
+                return ResponseEntity.badRequest().body("New password cannot be empty");
+            }
+            
+            Admin updatedAdmin = adminService.resetPassword(token, newPassword);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Password has been reset successfully");
+            response.put("username", updatedAdmin.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Error resetting password: " + e.getMessage());
         }
     }
 }

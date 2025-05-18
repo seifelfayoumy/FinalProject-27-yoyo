@@ -49,6 +49,17 @@ public class EmailService implements AdminEventListener {
         );
     }
 
+    public void sendPasswordResetEmail(String email, String resetLink) {
+        sendEmail(
+            email,
+            "Password Reset Request",
+            "Click the following link to reset your password: " + resetLink + "\n\n" +
+            "This link will expire in 1 hour.\n" +
+            "If you didn't request this, please ignore this email.\n\n" +
+            "Best regards,\nWalmart Admin Team"
+        );
+    }
+
     private void sendEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
