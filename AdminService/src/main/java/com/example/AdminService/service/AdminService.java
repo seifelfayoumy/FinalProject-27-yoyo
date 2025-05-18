@@ -37,10 +37,30 @@ public class AdminService {
     }
 
     public Admin createAdmin(Admin admin) {
-        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+        // Check if username is already taken
+        if (adminRepository.findByUsername(admin.getUsername()).isPresent()) {
+            throw new RuntimeException("Username is already taken");
+        }
+
+        // Check if email is already taken
+        if (adminRepository.findByEmail(admin.getEmail()).isPresent()) {
+            throw new RuntimeException("Email is already taken");
+        }
+
+        // Encode password only if it's not already encoded
+        if (!isPasswordEncoded(admin.getPassword())) {
+            admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+        }
+        
         Admin savedAdmin = adminRepository.save(admin);
         notifyAdminCreated(savedAdmin);
         return savedAdmin;
+    }
+
+    // Helper method to check if a password is already encoded
+    private boolean isPasswordEncoded(String password) {
+        // BCrypt passwords start with $2a$, $2b$, or $2y$
+        return password.matches("^\\$2[aby]\\$\\d{2}\\$.*");
     }
 
     public List<Admin> getAllAdmins() {
@@ -55,11 +75,27 @@ public class AdminService {
         Admin existingAdmin = adminRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Admin not found"));
 
+        // Check if new username is already taken by another admin
+        if (!existingAdmin.getUsername().equals(updatedAdmin.getUsername()) &&
+            adminRepository.findByUsername(updatedAdmin.getUsername()).isPresent()) {
+            throw new RuntimeException("Username is already taken");
+        }
+
+        // Check if new email is already taken by another admin
+        if (!existingAdmin.getEmail().equals(updatedAdmin.getEmail()) &&
+            adminRepository.findByEmail(updatedAdmin.getEmail()).isPresent()) {
+            throw new RuntimeException("Email is already taken");
+        }
+
         existingAdmin.setUsername(updatedAdmin.getUsername());
         existingAdmin.setEmail(updatedAdmin.getEmail());
 
         if (updatedAdmin.getPassword() != null && !updatedAdmin.getPassword().isEmpty()) {
-            existingAdmin.setPassword(passwordEncoder.encode(updatedAdmin.getPassword()));
+            if (!isPasswordEncoded(updatedAdmin.getPassword())) {
+                existingAdmin.setPassword(passwordEncoder.encode(updatedAdmin.getPassword()));
+            } else {
+                existingAdmin.setPassword(updatedAdmin.getPassword());
+            }
             notifyAdminPasswordChanged(existingAdmin);
         }
 
@@ -101,9 +137,10 @@ public class AdminService {
         if (!adminRepository.findByUsername("firstadmin").isPresent()) {
             Admin firstadmin = new Admin();
             firstadmin.setUsername("firstadmin");
-            firstadmin.setPassword(passwordEncoder.encode("admin123"));
+            // Don't encode the password here since createAdmin will handle it
+            firstadmin.setPassword("admin123");
             firstadmin.setEmail("firstadmin@gmail.com");
-            adminRepository.save(firstadmin);
+            createAdmin(firstadmin);
         }
     }
 }
