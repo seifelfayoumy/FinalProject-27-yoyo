@@ -3,6 +3,7 @@ package com.example.AdminService.service;
 import com.example.AdminService.model.Product;
 import com.example.AdminService.repository.ProductRepository;
 import com.example.AdminService.observer.ProductStockEventListener;
+import com.example.AdminService.dto.ProductUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,19 +47,27 @@ public class ProductService {
         return savedProduct;
     }
 
-    public Optional<Product> updateProduct(UUID id, Product updatedProduct) {
+    public Optional<Product> updateProduct(UUID id, ProductUpdateDTO updateDTO) {
         return productRepository.findById(id).map(existingProduct -> {
-            if (updatedProduct.getName() != null) {
-                existingProduct.setName(updatedProduct.getName());
+            // Only update fields that are present in the DTO
+            if (updateDTO.getName() != null) {
+                existingProduct.setName(updateDTO.getName());
             }
-            if (updatedProduct.getDescription() != null) {
-                existingProduct.setDescription(updatedProduct.getDescription());
+            if (updateDTO.getPrice() != null) {
+                existingProduct.setPrice(updateDTO.getPrice());
             }
-            existingProduct.setPrice(updatedProduct.getPrice());
-            existingProduct.setQuantity(updatedProduct.getQuantity());
-            existingProduct.setStockThreshold(updatedProduct.getStockThreshold());
+            if (updateDTO.getQuantity() != null) {
+                existingProduct.setQuantity(updateDTO.getQuantity());
+                checkAndNotifyStockLevel(existingProduct);
+            }
+            if (updateDTO.getDescription() != null) {
+                existingProduct.setDescription(updateDTO.getDescription());
+            }
+            if (updateDTO.getStockThreshold() != null) {
+                existingProduct.setStockThreshold(updateDTO.getStockThreshold());
+                checkAndNotifyStockLevel(existingProduct);
+            }
             
-            checkAndNotifyStockLevel(existingProduct);
             return productRepository.save(existingProduct);
         });
     }
