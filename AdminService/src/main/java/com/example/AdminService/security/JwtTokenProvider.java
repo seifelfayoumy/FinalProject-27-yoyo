@@ -53,39 +53,50 @@ public class JwtTokenProvider {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            throw new JwtException("Session expired. Please login again.");
         } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            throw new JwtException("Invalid token. Please login again.");
         }
     }
 
     public String getUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (ExpiredJwtException e) {
+            // Even if token is expired, we can still extract the username
+            return e.getClaims().getSubject();
+        }
     }
 
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
 
-        List<String> roles = claims.get("roles", List.class);
-        List<SimpleGrantedAuthority> authorities = roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+            List<String> roles = claims.get("roles", List.class);
+            List<SimpleGrantedAuthority> authorities = roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
 
-        UserDetails userDetails = User.builder()
-                .username(claims.getSubject())
-                .password("")
-                .authorities(authorities)
-                .build();
+            UserDetails userDetails = User.builder()
+                    .username(claims.getSubject())
+                    .password("")
+                    .authorities(authorities)
+                    .build();
 
-        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
+            return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
+        } catch (ExpiredJwtException e) {
+            throw new JwtException("Session expired. Please login again.");
+        }
     }
 
     public String createPasswordResetToken(String username) {
@@ -93,8 +104,8 @@ public class JwtTokenProvider {
         claims.put("type", "password_reset");
         
         Date now = new Date();
-        // Password reset tokens expire in 1 hour
-        Date validity = new Date(now.getTime() + 3600000);
+        // Password reset tokens expire in 10 minutes
+        Date validity = new Date(now.getTime() + 600000);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -118,7 +129,9 @@ public class JwtTokenProvider {
             }
 
             return claims.getSubject();
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (ExpiredJwtException e) {
+            throw new JwtException("Password reset link has expired. Please request a new one.");
+        } catch (JwtException e) {
             return null;
         }
     }

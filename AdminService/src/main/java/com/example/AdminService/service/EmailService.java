@@ -32,16 +32,21 @@ public class EmailService implements AdminEventListener, ProductStockEventListen
             "Best regards,\nWalmart Admin Team"
         );
     }
+
     public void sendPasswordResetEmail(String email, String resetLink) {
         sendEmail(
-                email,
-                "Password Reset Request",
-                "Click the following link to reset your password: " + resetLink + "\n\n" +
-                        "This link will expire in 1 hour.\n" +
-                        "If you didn't request this, please ignore this email.\n\n" +
-                        "Best regards,\nWalmart Admin Team"
+            email,
+            "Password Reset Request - Walmart Admin System",
+            "Dear Admin,\n\n" +
+            "A password reset has been requested for your admin account.\n\n" +
+            "To reset your password, click the following link:\n" +
+            resetLink + "\n\n" +
+            "IMPORTANT: This link will expire in 10 minutes for security reasons.\n\n" +
+            "If you did not request this password reset, please ignore this email and ensure your account is secure.\n\n" +
+            "Best regards,\nWalmart Admin Team"
         );
     }
+
     @Override
     public void onAdminDeleted(Admin admin) {
         sendEmail(
