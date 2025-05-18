@@ -47,7 +47,7 @@ public class Transaction {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "transaction_products", 
                     joinColumns = @JoinColumn(name = "transaction_id"))
-    private List<String> products; // Format: "ProductID-quantity"
+    private List<String> products; // Format: "ProductID quantity"
 
     @PrePersist
     void onInsert() { createdAt = Instant.now(); }
