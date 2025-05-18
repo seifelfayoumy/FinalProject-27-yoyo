@@ -101,4 +101,5 @@ public class Promotion {
     public void setApplicableProductIds(List<UUID> applicableProductIds) {
         this.applicableProductIds = applicableProductIds;
     }
+
 }
