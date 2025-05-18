@@ -37,7 +37,9 @@ public class WebSecurityConfig {
                                 "/api/admins/register",
                                 "/api/admins/forgot-password",
                                 "/api/admins/reset-password",
-                                "/api/products/*/decrease"
+                                "/api/products/*/decrease",
+                                "/api/products",
+                                "/api/products/*"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
