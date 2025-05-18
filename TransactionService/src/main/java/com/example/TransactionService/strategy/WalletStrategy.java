@@ -10,5 +10,11 @@ public class WalletStrategy implements PaymentStrategy {
         // --- pretend you debit the user’s wallet ---
         tx.setStatus("PAID");
     }
+      @Override
+    public void refund(Transaction tx) {
+        // Simulate wallet refund logic
+        System.out.println("Refunding wallet payment for transaction " + tx.getId());
+        // In a real app, you'd increase the user's wallet balance again
+    }
 }
 
