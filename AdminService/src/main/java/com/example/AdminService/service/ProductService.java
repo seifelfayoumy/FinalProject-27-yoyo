@@ -67,6 +67,9 @@ public class ProductService {
                 existingProduct.setStockThreshold(updateDTO.getStockThreshold());
                 checkAndNotifyStockLevel(existingProduct);
             }
+            if (updateDTO.getCategory() != null) {
+                existingProduct.setCategory(updateDTO.getCategory());
+            }
             
             return productRepository.save(existingProduct);
         });
