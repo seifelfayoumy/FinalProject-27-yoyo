@@ -29,27 +29,26 @@ public class SearchService {
     }
     
     /**
-     * Returns the top 10 products with the lowest prices.
+     * Returns the top 3 products with the lowest prices.
      * Results are cached in Redis for improved performance.
      *
-     * @return List of the 10 lowest priced products
+     * @return List of the 3 lowest priced products
      */
-    @Cacheable(value = "topTenLowestPriceProducts")
-    public List<Product> getTopTenLowestPriceProducts() {
+    @Cacheable(value = "topThreeLowestPriceProducts")
+    public List<Product> getTopThreeLowestPriceProducts() {
         return getAllProducts().stream()
-                .filter(product -> product.getPrice() != null)
                 .sorted(Comparator.comparing(Product::getPrice))
-                .limit(10)
+                .limit(3)
                 .collect(Collectors.toList());
     }
     
     /**
-     * Scheduled task to refresh the cached top 10 lowest priced products every 30 minutes.
+     * Scheduled task to refresh the cached top 3 lowest priced products every 30 minutes.
      */
     @Scheduled(fixedRate = 30 * 60 * 1000) // 30 minutes
-    public void refreshTopTenCache() {
+    public void refreshTopThreeCache() {
         // This will trigger a cache refresh
-        getTopTenLowestPriceProducts();
+        getTopThreeLowestPriceProducts();
     }
     
     /**
@@ -74,7 +73,7 @@ public class SearchService {
     }
     
     /**
-     * Filters by exact match on category (e.g., "Electronics").
+     * Filters products by exact match on category (e.g., "Electronics", "Clothing").
      *
      * @param category The category to filter by
      * @return List of products in the specified category
@@ -89,6 +88,17 @@ public class SearchService {
                     product.getCategory() != null && 
                     product.getCategory().equalsIgnoreCase(category)
                 )
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Returns products with stock level below threshold.
+     *
+     * @return List of products with low stock
+     */
+    public List<Product> getLowStockProducts() {
+        return getAllProducts().stream()
+                .filter(product -> product.getQuantity() <= product.getStockThreshold())
                 .collect(Collectors.toList());
     }
     
@@ -108,10 +118,7 @@ public class SearchService {
         
         return allProducts.stream()
                 .filter(product -> {
-                    Double price = product.getPrice();
-                    if (price == null) {
-                        return false;
-                    }
+                    double price = product.getPrice();
                     
                     boolean aboveMin = min == null || price >= min;
                     boolean belowMax = max == null || price <= max;

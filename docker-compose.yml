@@ -45,12 +45,11 @@ services:
       - postgres
 
   redisinsight:
-    image: redislabs/redisinsight:latest
-    container_name: redisinsight
+    image: redis/redisinsight:latest
+    container_name: redisInsight
     ports:
-      - "8001:8001"
-    depends_on:
-      - redis
+      - "5540:5540"
+    restart: always
 
   mongo-express:
     image: mongo-express

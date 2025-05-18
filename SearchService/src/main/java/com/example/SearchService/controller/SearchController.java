@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 public class SearchController {
     
     private final SearchService searchService;
@@ -31,14 +31,14 @@ public class SearchController {
     }
     
     /**
-     * Returns the top 10 products with the lowest prices.
+     * Returns the top 3 products with the lowest prices.
      * Results are cached in Redis for improved performance.
      *
-     * @return List of the 10 lowest priced products
+     * @return List of the 3 lowest priced products
      */
-    @GetMapping("/top-ten-lowest-price")
-    public ResponseEntity<List<Product>> getTopTenLowestPriceProducts() {
-        return ResponseEntity.ok(searchService.getTopTenLowestPriceProducts());
+    @GetMapping("/top-three-lowest-price")
+    public ResponseEntity<List<Product>> getTopThreeLowestPriceProducts() {
+        return ResponseEntity.ok(searchService.getTopThreeLowestPriceProducts());
     }
     
     /**
@@ -54,15 +54,25 @@ public class SearchController {
     }
     
     /**
+     * Returns products with stock level below threshold.
+     *
+     * @return List of products with low stock
+     */
+    @GetMapping("/low-stock")
+    public ResponseEntity<List<Product>> getLowStockProducts() {
+        return ResponseEntity.ok(searchService.getLowStockProducts());
+    }
+    
+    /**
      * Filters products by category.
      *
-     * @param value The category to filter by
+     * @param category The category to filter by
      * @return List of products in the specified category
      */
     @GetMapping("/filter/category")
     public ResponseEntity<List<Product>> filterByCategory(
-            @RequestParam(required = false) String value) {
-        return ResponseEntity.ok(searchService.filterByCategory(value));
+            @RequestParam(required = false) String category) {
+        return ResponseEntity.ok(searchService.filterByCategory(category));
     }
     
     /**
