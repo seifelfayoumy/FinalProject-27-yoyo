@@ -45,6 +45,17 @@ public class ProductController {
         return updated.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    @PatchMapping("/{id}/decrease")
+    public ResponseEntity<?> decreaseProductQuantity(@PathVariable UUID id, @RequestParam int amount) {
+        try {
+            Optional<Product> product = productService.decreaseProductQuantity(id, amount);
+            return product.map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
