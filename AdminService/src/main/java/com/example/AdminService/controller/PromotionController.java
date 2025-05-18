@@ -18,8 +18,15 @@ public class PromotionController {
     private PromotionService promotionService;
 
     @PostMapping
-    public ResponseEntity<Promotion> createPromotion(@RequestBody Promotion promotion) {
-        return ResponseEntity.ok(promotionService.createPromotion(promotion));
+    public ResponseEntity<?> createPromotion(@RequestBody Promotion promotion) {
+        try {
+            Promotion saved = promotionService.createPromotion(promotion);
+            return ResponseEntity.ok(saved);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("promoCode name already exists");
+        }
     }
 
     @GetMapping

@@ -21,6 +21,13 @@ public class PromotionService {
     private PromotionRepository promotionRepository;
 
     public Promotion createPromotion(Promotion promotion) {
+        // 1. Check for duplicates first
+        if (promotionRepository.existsByName(promotion.getName())) {
+            throw new IllegalArgumentException(
+                "Promotion name '" + promotion.getName() + "' already created"
+            );
+        }
+        
         promotion.setId(UUID.randomUUID());
 
         if (promotion.getType() == PromotionType.CART_PROMOCODE &&
