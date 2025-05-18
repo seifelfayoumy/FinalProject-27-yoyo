@@ -6,6 +6,7 @@ import com.example.AdminService.repository.PromotionRepository;
 import com.example.AdminService.strategy.CartDiscountStrategy;
 import com.example.AdminService.strategy.DiscountStrategy;
 import com.example.AdminService.strategy.ItemDiscountStrategy;
+import com.example.AdminService.strategy.FixedAmountStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -102,7 +103,15 @@ public class PromotionService {
             String appliedTo = discountedItems.keySet().stream().map(UUID::toString).collect(Collectors.joining(", "));
             return ResponseEntity.ok("Item promo applied to products: [" + appliedTo + "]. New total: " + newTotal);
         }
-
+        else if(p.getType() == PromotionType.FIXED_AMOUNT) {
+            double total = products.values().stream().mapToDouble(Double::doubleValue).sum();
+            if (total <= 0) {
+                return ResponseEntity.badRequest().body("Product list is empty. Cannot apply fixed amount promotion.");
+            }
+            DiscountStrategy strategy = new FixedAmountStrategy(p.getDiscountValue());
+            double discounted = strategy.applyDiscount(total);
+            return ResponseEntity.ok("Fixed amount promo applied successfully. New total: " + discounted);
+        }
         return ResponseEntity.badRequest().body("Unsupported promotion type");
     }
 }
