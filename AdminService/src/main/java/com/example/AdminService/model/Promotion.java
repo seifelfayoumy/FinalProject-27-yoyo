@@ -1,11 +1,16 @@
 package com.example.AdminService.model;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@Document(collection = "Promotions")
 public class Promotion {
 
+    @Id
     private UUID id;
     private String name; // e.g., "RAMADAN20" or "ITEM10"
     private PromotionType type; // ITEM_DISCOUNT or CART_PROMOCODE
@@ -15,7 +20,6 @@ public class Promotion {
     private boolean active;
     private List<UUID> applicableProductIds; // Only for ITEM_DISCOUNT type
 
-    // === Constructors ===
     public Promotion() {
         this.id = UUID.randomUUID();
     }
@@ -32,8 +36,6 @@ public class Promotion {
         this.active = active;
         this.applicableProductIds = applicableProductIds;
     }
-
-    // === Getters and Setters ===
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
