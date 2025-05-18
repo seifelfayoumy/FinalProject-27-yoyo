@@ -28,9 +28,8 @@ public class PromotionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Promotion> getPromotionById(@PathVariable UUID id) {
-        Optional<Promotion> promotion = promotionService.getPromotionById(id);
-        return promotion.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getPromotionById(@PathVariable UUID id) {
+        return ResponseEntity.ok(promotionService.getPromotionById(id));
     }
 
     @PutMapping("/{id}")
@@ -40,10 +39,16 @@ public class PromotionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePromotion(@PathVariable UUID id) {
-        promotionService.deletePromotion(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deletePromotion(@PathVariable UUID id) {
+        Map<String, String> result = promotionService.deletePromotion(id);
+
+        if (result.get("message").contains("not found")) {
+            return ResponseEntity.status(404).body(result);
+        } else {
+            return ResponseEntity.ok(result);
+        }
     }
+
 
     @PostMapping("/apply")
     public ResponseEntity<String> applyPromo(@RequestParam String promoCode, @RequestBody Map<UUID, Double> products) {
