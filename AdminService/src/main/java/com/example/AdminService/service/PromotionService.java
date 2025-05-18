@@ -33,8 +33,14 @@ public class PromotionService {
     }
 
 
-    public Optional<Promotion> getPromotionById(UUID id) {
-        return promotionRepository.findById(id);
+    public Object getPromotionById(UUID id) {
+        return promotionRepository.findById(id)
+                .<Object>map(promotion -> promotion)
+                .orElseGet(() -> {
+                    Map<String, String> response = new HashMap<>();
+                    response.put("message", "Promotion with ID " + id + " not found");
+                    return response;
+                });
     }
 
     public List<Promotion> getAllPromotions() {
@@ -48,9 +54,19 @@ public class PromotionService {
         });
     }
 
-    public void deletePromotion(UUID id) {
-        promotionRepository.deleteById(id);
+    public Map<String, String> deletePromotion(UUID id) {
+        if (promotionRepository.existsById(id)) {
+            promotionRepository.deleteById(id);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Promotion with ID " + id + " was deleted successfully.");
+            return response;
+        } else {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Promotion with ID " + id + " not found.");
+            return response;
+        }
     }
+
 
     public ResponseEntity<String> applyPromo(String promoCode, Map<UUID, Double> products) {
         Optional<Promotion> promoOpt = promotionRepository.findByName(promoCode);
