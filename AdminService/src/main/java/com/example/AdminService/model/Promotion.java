@@ -12,13 +12,14 @@ public class Promotion {
 
     @Id
     private UUID id;
-    private String name; // e.g., "RAMADAN20" or "ITEM10"
-    private PromotionType type; // ITEM_DISCOUNT or CART_PROMOCODE
-    private double discountValue; // percentage discount (e.g., 10 means 10%)
+
+    private String name; // promo code (e.g. "RAMADAN20")
+    private PromotionType type; // CART_PROMOCODE or ITEM_DISCOUNT
+    private double discountValue; // percentage
     private LocalDate startDate;
     private LocalDate endDate;
     private boolean active;
-    private List<UUID> applicableProductIds; // Only for ITEM_DISCOUNT type
+    private List<UUID> applicableProductIds; // for ITEM_DISCOUNT only
 
     public Promotion() {
         this.id = UUID.randomUUID();
@@ -37,27 +38,67 @@ public class Promotion {
         this.applicableProductIds = applicableProductIds;
     }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-    public PromotionType getType() { return type; }
-    public void setType(PromotionType type) { this.type = type; }
+    public String getName() {
+        return name;
+    }
 
-    public double getDiscountValue() { return discountValue; }
-    public void setDiscountValue(double discountValue) { this.discountValue = discountValue; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public LocalDate getStartDate() { return startDate; }
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+    public PromotionType getType() {
+        return type;
+    }
 
-    public LocalDate getEndDate() { return endDate; }
-    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+    public void setType(PromotionType type) {
+        this.type = type;
+    }
 
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public double getDiscountValue() {
+        return discountValue;
+    }
 
-    public List<UUID> getApplicableProductIds() { return applicableProductIds; }
-    public void setApplicableProductIds(List<UUID> applicableProductIds) { this.applicableProductIds = applicableProductIds; }
+    public void setDiscountValue(double discountValue) {
+        this.discountValue = discountValue;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public List<UUID> getApplicableProductIds() {
+        return applicableProductIds;
+    }
+
+    public void setApplicableProductIds(List<UUID> applicableProductIds) {
+        this.applicableProductIds = applicableProductIds;
+    }
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,8 +17,6 @@ public class PromotionController {
 
     @Autowired
     private PromotionService promotionService;
-
-    // === CRUD Endpoints ===
 
     @PostMapping
     public ResponseEntity<Promotion> createPromotion(@RequestBody Promotion promotion) {
@@ -47,17 +46,8 @@ public class PromotionController {
         return ResponseEntity.noContent().build();
     }
 
-    // === Applying Promotions ===
-
-    @GetMapping("/apply-item")
-    public ResponseEntity<Double> applyItemDiscount(@RequestParam UUID productId, @RequestParam double price) {
-        double discountedPrice = promotionService.applyItemPromotion(productId, price);
-        return ResponseEntity.ok(discountedPrice);
-    }
-
-    @GetMapping("/apply-cart")
-    public ResponseEntity<Double> applyCartDiscount(@RequestParam String promoCode, @RequestParam double total) {
-        double discountedTotal = promotionService.applyCartPromotion(promoCode, total);
-        return ResponseEntity.ok(discountedTotal);
+    @PostMapping("/apply")
+    public ResponseEntity<String> applyPromo(@RequestParam String promoCode, @RequestBody Map<UUID, Double> products) {
+        return promotionService.applyPromo(promoCode, products);
     }
 }
