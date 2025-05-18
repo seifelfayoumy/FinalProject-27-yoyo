@@ -9,7 +9,6 @@ import com.example.AdminService.strategy.ItemDiscountStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
