@@ -35,6 +35,8 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/admins/login",
                                 "/api/admins/register",
+                                "/api/admins/forgot-password",
+                                "/api/admins/reset-password",
                                 "/api/products/*/decrease"
                         ).permitAll()
                         .anyRequest().authenticated()
