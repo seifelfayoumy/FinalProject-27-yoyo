@@ -1,5 +1,6 @@
 package com.example.AdminService.strategy;
 
+
 public class CartDiscountStrategy implements DiscountStrategy {
 
     private final double discountPercentage;
