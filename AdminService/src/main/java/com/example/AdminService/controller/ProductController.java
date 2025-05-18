@@ -1,5 +1,6 @@
 package com.example.AdminService.controller;
 
+import com.example.AdminService.dto.ProductUpdateDTO;
 import com.example.AdminService.model.Product;
 import com.example.AdminService.service.ProductService;
 import com.example.AdminService.service.AdminService;
@@ -40,8 +41,8 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateProduct(@PathVariable UUID id, @RequestBody Product product) {
-        Optional<Product> updated = productService.updateProduct(id, product);
+    public ResponseEntity<?> updateProduct(@PathVariable UUID id, @RequestBody ProductUpdateDTO updateDTO) {
+        Optional<Product> updated = productService.updateProduct(id, updateDTO);
         return updated.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
