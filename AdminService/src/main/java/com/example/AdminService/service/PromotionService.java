@@ -22,8 +22,16 @@ public class PromotionService {
 
     public Promotion createPromotion(Promotion promotion) {
         promotion.setId(UUID.randomUUID());
+
+        if (promotion.getType() == PromotionType.CART_PROMOCODE &&
+                promotion.getApplicableProductIds() != null &&
+                !promotion.getApplicableProductIds().isEmpty()) {
+            throw new IllegalArgumentException("CART_PROMOCODE promotions should not have applicable product IDs.");
+        }
+
         return promotionRepository.save(promotion);
     }
+
 
     public Optional<Promotion> getPromotionById(UUID id) {
         return promotionRepository.findById(id);
