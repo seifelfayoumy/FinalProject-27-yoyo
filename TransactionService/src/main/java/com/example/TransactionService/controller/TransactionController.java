@@ -1,15 +1,24 @@
 package com.example.TransactionService.controller;
 
-import com.example.TransactionService.model.Transaction;
-import com.example.TransactionService.service.TransactionService;
-import lombok.RequiredArgsConstructor;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.example.TransactionService.model.Transaction;
+import com.example.TransactionService.service.TransactionService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -27,6 +36,10 @@ public class TransactionController {
             Map<String, Object> response = new HashMap<>();
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (IllegalStateException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("error", "An unexpected error occurred");
@@ -35,35 +48,126 @@ public class TransactionController {
     }
 
     @GetMapping("/{id}")
-    public Transaction get(@PathVariable Long id) {
-        return service.get(id);
+    public ResponseEntity<?> get(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.get(id));
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping
-    public List<Transaction> list() {
-        return service.list();
+    public ResponseEntity<?> list() {
+        try {
+            return ResponseEntity.ok(service.list());
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PutMapping("/{id}")
-    public Transaction update(@PathVariable Long id,
-                              @RequestBody Transaction tx) {
-        return service.update(id, tx);
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Transaction tx) {
+        try {
+            return ResponseEntity.ok(service.update(id, tx));
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            service.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/{id}/pay")
-    public Transaction pay(@PathVariable Long id) {
-        return service.processPayment(id);
-    }
-        @PostMapping("/{id}/refund")
-    public Transaction refund(@PathVariable Long id) {
-        return service.refund(id);
+    public ResponseEntity<?> pay(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.processPayment(id));
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (IllegalStateException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<?> refund(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.refund(id));
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (IllegalStateException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", "An unexpected error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getUserTransactions(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(service.getTransactionsByUser(userId));
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<?> getOrderTransactions(@PathVariable Long orderId) {
+        try {
+            return ResponseEntity.ok(service.getTransactionsByOrder(orderId));
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/user/{userId}/history")
+    public ResponseEntity<?> getUserOrderHistory(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(service.getUserOrderHistory(userId));
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }
