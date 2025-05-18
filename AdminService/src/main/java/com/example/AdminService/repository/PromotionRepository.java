@@ -10,5 +10,6 @@ import java.util.UUID;
 @Repository
 public interface PromotionRepository extends MongoRepository<Promotion, UUID> {
     Optional<Promotion> findByName(String name);
+    boolean existsByName(String name);
 }
 

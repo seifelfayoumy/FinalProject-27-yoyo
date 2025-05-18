@@ -2,6 +2,7 @@ package com.example.AdminService.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,7 +13,7 @@ public class Promotion {
 
     @Id
     private UUID id;
-
+    @Indexed(unique = true)
     private String name; // promo code (e.g. "RAMADAN20")
     private PromotionType type; // CART_PROMOCODE or ITEM_DISCOUNT
     private double discountValue; // percentage
