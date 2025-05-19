@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: admin-service
+  template:
+    metadata:
+      labels:
+        app: admin-service
+    spec:
+      initContainers:
+      - name: init-mongo
+        image: mongo:latest
+        command: 
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          mongosh "$MONGO_URI" --eval '
+          db = db.getSiblingDB("admindb");
+          const existingAdmin = db.admins.findOne({username: "firstadmin"});
+          if (!existingAdmin) {
+            db.admins.insertOne({
+              username: "firstadmin",
+              password: "$2a$10$n/5spLdLiZbaMjR1YJX4pe5FMykGITeL.ztzGlwJiKs6A5DkPvOAe",
+              email: "firstadmin@gmail.com"
+            });
+            print("Admin user inserted successfully");
+          } else {
+            print("Admin user already exists");
+          }
+          '
+        env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: URI
+      containers:
+        - name: admin-service
+          image: seifelfayoumy/admin:2.0
+          ports:
+            - containerPort: 8084
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+            - name: SPRING_DATA_MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: URI
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: admindb
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secret
+                  key: RABBITMQ_DEFAULT_USER
+            - name: SPRING_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secret
+                  key: RABBITMQ_DEFAULT_PASS

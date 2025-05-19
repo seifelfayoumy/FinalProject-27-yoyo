@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/search")
 public class SearchController {
     
     private final SearchService searchService;
@@ -25,7 +25,7 @@ public class SearchController {
      *
      * @return List of all products
      */
-    @GetMapping
+    @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
         return ResponseEntity.ok(searchService.getAllProducts());
     }
@@ -36,7 +36,7 @@ public class SearchController {
      *
      * @return List of the 3 lowest priced products
      */
-    @GetMapping("/top-three-lowest-price")
+    @GetMapping("/products/top-three-lowest-price")
     public ResponseEntity<List<Product>> getTopThreeLowestPriceProducts() {
         return ResponseEntity.ok(searchService.getTopThreeLowestPriceProducts());
     }
@@ -47,7 +47,7 @@ public class SearchController {
      * @param keyword The search term to match against name and description
      * @return List of matching products
      */
-    @GetMapping("/search")
+    @GetMapping("/products/search")
     public ResponseEntity<List<Product>> searchProducts(
             @RequestParam(required = false) String keyword) {
         return ResponseEntity.ok(searchService.searchByKeyword(keyword));
@@ -58,7 +58,7 @@ public class SearchController {
      *
      * @return List of products with low stock
      */
-    @GetMapping("/low-stock")
+    @GetMapping("/products/low-stock")
     public ResponseEntity<List<Product>> getLowStockProducts() {
         return ResponseEntity.ok(searchService.getLowStockProducts());
     }
@@ -69,7 +69,7 @@ public class SearchController {
      * @param category The category to filter by
      * @return List of products in the specified category
      */
-    @GetMapping("/filter/category")
+    @GetMapping("/products/filter/category")
     public ResponseEntity<List<Product>> filterByCategory(
             @RequestParam(required = false) String category) {
         return ResponseEntity.ok(searchService.filterByCategory(category));
@@ -82,7 +82,7 @@ public class SearchController {
      * @param max Maximum price (inclusive)
      * @return List of products within the price range
      */
-    @GetMapping("/filter/price")
+    @GetMapping("/products/filter/price")
     public ResponseEntity<List<Product>> filterByPriceRange(
             @RequestParam(required = false) Double min,
             @RequestParam(required = false) Double max) {

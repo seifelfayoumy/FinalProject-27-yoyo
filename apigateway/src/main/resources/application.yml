@@ -24,9 +24,12 @@ spring:
 
         # ─── Transaction (Order) Service ─────────────────────────────────
         - id: transaction-service
-          uri: http://localhost:8082/api/transactions
+          uri: http://localhost:8082
           predicates:
             - Path=/api/orders/**
+          filters:
+            - RewritePath=/api/orders$, /api/transactions
+            - RewritePath=/api/orders/(?<segment>.*), /api/transactions/$\{segment}
 
         # ─── Admin Service ──────────────────────────────────────────────
         - id: admin-service-admins
