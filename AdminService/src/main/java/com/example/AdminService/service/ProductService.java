@@ -1,16 +1,17 @@
 package com.example.AdminService.service;
 
-import com.example.AdminService.model.Product;
-import com.example.AdminService.repository.ProductRepository;
-import com.example.AdminService.observer.ProductStockEventListener;
-import com.example.AdminService.dto.ProductUpdateDTO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.AdminService.dto.ProductUpdateDTO;
+import com.example.AdminService.model.Product;
+import com.example.AdminService.observer.ProductStockEventListener;
+import com.example.AdminService.repository.ProductRepository;
 
 @Service
 public class ProductService {
@@ -84,6 +85,7 @@ public class ProductService {
             notifyLowStock(product);
         }
     }
+    
     public Optional<Product> decreaseProductQuantity(UUID id, int amount) {
         return productRepository.findById(id).map(product -> {
             int newQuantity = product.getQuantity() - amount;
@@ -96,6 +98,66 @@ public class ProductService {
             checkAndNotifyStockLevel(product);
             return productRepository.save(product);
         });
+    }
+    
+    /**
+     * Increase stock for a product (for refunds)
+     * 
+     * @param id The product ID
+     * @param amount The quantity to increase
+     * @return The updated product
+     */
+    public Optional<Product> increaseProductQuantity(UUID id, int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount to increase must be positive");
+        }
+        
+        return productRepository.findById(id).map(product -> {
+            product.setQuantity(product.getQuantity() + amount);
+            return productRepository.save(product);
+        });
+    }
+    
+    /**
+     * Decrease stock for a product with the given string ID
+     * 
+     * @param productId The product ID as a string
+     * @param quantity The quantity to decrease
+     * @return The updated product
+     * @throws IllegalArgumentException If the product is not found or has insufficient stock
+     */
+    public Product decreaseStock(String productId, int quantity) {
+        try {
+            UUID id = UUID.fromString(productId);
+            return decreaseProductQuantity(id, quantity)
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Product not found")) {
+                throw e;
+            }
+            throw new IllegalArgumentException("Invalid product ID format: " + productId);
+        }
+    }
+    
+    /**
+     * Increase stock for a product with the given string ID (for refunds)
+     * 
+     * @param productId The product ID as a string
+     * @param quantity The quantity to increase
+     * @return The updated product
+     * @throws IllegalArgumentException If the product is not found
+     */
+    public Product increaseStock(String productId, int quantity) {
+        try {
+            UUID id = UUID.fromString(productId);
+            return increaseProductQuantity(id, quantity)
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Product not found")) {
+                throw e;
+            }
+            throw new IllegalArgumentException("Invalid product ID format: " + productId);
+        }
     }
 
     private void notifyLowStock(Product product) {
