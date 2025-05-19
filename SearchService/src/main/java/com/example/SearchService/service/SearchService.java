@@ -2,6 +2,8 @@ package com.example.SearchService.service;
 
 import com.example.SearchService.client.ProductClient;
 import com.example.SearchService.client.ProductClient.Product;
+import com.example.SearchService.command.Command;
+import com.example.SearchService.command.SearchByKeywordCommand;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,17 @@ public class SearchService {
     
     public SearchService(ProductClient productClient) {
         this.productClient = productClient;
+    }
+    
+    /**
+     * Executes a command following the Command pattern.
+     * 
+     * @param <T> The type of result returned by the command
+     * @param command The command to execute
+     * @return The result of the command execution
+     */
+    public <T> T executeCommand(Command<T> command) {
+        return command.execute();
     }
     
     /**
@@ -53,23 +66,17 @@ public class SearchService {
     
     /**
      * Returns products where keyword matches name or description (case-insensitive).
+     * Uses the Command pattern to encapsulate the search logic.
      *
      * @param keyword The search term to match against name and description
      * @return List of matching products
      */
     public List<Product> searchByKeyword(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return getAllProducts();
-        }
+        // Create a command instance for the searchByKeyword operation
+        SearchByKeywordCommand command = new SearchByKeywordCommand(getAllProducts(), keyword);
         
-        String lowercaseKeyword = keyword.toLowerCase();
-        
-        return getAllProducts().stream()
-                .filter(product -> 
-                    (product.getName() != null && product.getName().toLowerCase().contains(lowercaseKeyword)) ||
-                    (product.getDescription() != null && product.getDescription().toLowerCase().contains(lowercaseKeyword))
-                )
-                .collect(Collectors.toList());
+        // Execute the command using the command executor
+        return executeCommand(command);
     }
     
     /**
