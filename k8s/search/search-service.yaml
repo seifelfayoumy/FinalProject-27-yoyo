@@ -7,6 +7,6 @@ spec:
   selector:
     app: search-service
   ports:
-    - port: 8080
+    - port: 8083
       targetPort: 8083
 

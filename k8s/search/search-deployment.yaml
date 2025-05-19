@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: search-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: search-service
@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
         - name: search-service
-          image: seifelfayoumy/search
+          image: seifelfayoumy/search:1.0
           ports:
-            - containerPort: 8080
+            - containerPort: 8083
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
@@ -25,4 +25,4 @@ spec:
             - name: SPRING_REDIS_PORT
               value: "6379"
             - name: admin-product.url
-              value: http://admin-service:8080
+              value: http://admin-service:8084

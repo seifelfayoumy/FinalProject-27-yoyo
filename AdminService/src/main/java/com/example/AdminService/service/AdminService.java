@@ -53,10 +53,10 @@ public class AdminService {
         }
 
         // Validate password strength
-        PasswordValidator.ValidationResult validationResult = PasswordValidator.validatePassword(admin.getPassword());
-        if (!validationResult.isValid()) {
-            throw new RuntimeException("Password requirements not met: " + String.join(", ", validationResult.getErrors()));
-        }
+        // PasswordValidator.ValidationResult validationResult = PasswordValidator.validatePassword(admin.getPassword());
+        // if (!validationResult.isValid()) {
+        //     throw new RuntimeException("Password requirements not met: " + String.join(", ", validationResult.getErrors()));
+        // }
 
         // Encode password only if it's not already encoded
         if (!isPasswordEncoded(admin.getPassword())) {
@@ -181,7 +181,7 @@ public class AdminService {
             Admin firstadmin = new Admin();
             firstadmin.setUsername("firstadmin");
             // Don't encode the password here since createAdmin will handle it
-            firstadmin.setPassword("admin123");
+            firstadmin.setPassword("aAcjdcen1938@@$$$$@@gsvc-DDDH");
             firstadmin.setEmail("firstadmin@gmail.com");
             createAdmin(firstadmin);
         }

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: transaction-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: transaction-service
@@ -14,14 +14,14 @@ spec:
     spec:
       containers:
         - name: transaction-service
-          image: seifelfayoumy/transaction
+          image: seifelfayoumy/transaction:1.0
           ports:
-            - containerPort: 8080
+            - containerPort: 8082
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-0.postgres:5432/transactions_db
+              value: jdbc:postgresql://postgres-transaction-0.postgres-transaction:5432/transactions_db
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -47,6 +47,6 @@ spec:
                   name: rabbitmq-secret
                   key: RABBITMQ_DEFAULT_PASS
             - name: user.service.url
-              value: http://user-service:8080
+              value: http://user-service:8081
             - name: admin.service.url
-              value: http://admin-service:8080
+              value: http://admin-service:8084
