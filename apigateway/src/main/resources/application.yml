@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: apigateway
+
+  cloud:
+    gateway:
+      routes:
+        # ─── User Service ───────────────────────────────────────────────
+        - id: user-service
+          uri: http://localhost:8081/api/users
+          predicates:
+            - Path=/api/users/**
+
+        # ─── Search Service ─────────────────────────────────────────────
+        - id: search-service
+          uri: http://localhost:8083/api/search
+          predicates:
+            - Path=/api/search/**
+
+        # ─── Transaction (Order) Service ─────────────────────────────────
+        - id: transaction-service
+          uri: http://localhost:8082/api/transactions
+          predicates:
+            - Path=/api/orders/**
+
+        # ─── Admin Service ──────────────────────────────────────────────
+        - id: admin-service-admins
+          uri: http://localhost:8084/api/admins
+          predicates:
+            - Path=/api/admins/**
+            
+        - id: admin-service-products
+          uri: http://localhost:8084/api/products
+          predicates:
+            - Path=/api/products/**
+            
+        - id: admin-service-promotions
+          uri: http://localhost:8084/api/promotions
+          predicates:
+            - Path=/api/promotions/**
