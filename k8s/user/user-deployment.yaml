@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: user-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: user-service
@@ -14,14 +14,14 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: seifelfayoumy/user
+          image: seifelfayoumy/user:1.0
           ports:
-            - containerPort: 8080
+            - containerPort: 8081
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-0.postgres:5433/walmart
+              value: jdbc:postgresql://postgres-user:5432/walmart
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:

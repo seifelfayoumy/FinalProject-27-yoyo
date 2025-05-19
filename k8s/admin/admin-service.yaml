@@ -7,6 +7,6 @@ spec:
   selector:
     app: admin-service
   ports:
-    - port: 8080
+    - port: 8084
       targetPort: 8084
 

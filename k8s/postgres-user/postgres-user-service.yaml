@@ -4,7 +4,7 @@ metadata:
   name: postgres-user
 spec:
   ports:
-    - port: 5433
+    - port: 5432
       targetPort: 5432
   clusterIP: None  # Headless service
   selector:

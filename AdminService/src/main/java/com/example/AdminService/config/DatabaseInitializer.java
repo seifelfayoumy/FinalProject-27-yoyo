@@ -18,7 +18,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         if (!adminService.getAllAdmins().stream().anyMatch(a -> "firstadmin".equals(a.getUsername()))) {
             Admin admin = new Admin();
             admin.setUsername("firstadmin");
-            admin.setPassword("admin123"); // Password will be encoded by AdminService
+            admin.setPassword("Acjdcen1938@@$$$$@@gsvc-DDDH"); // Password will be encoded by AdminService
             admin.setEmail("firstadmin@gmail.com");
             try {
                 adminService.createAdmin(admin);
