@@ -12,32 +12,34 @@ spring:
       routes:
         # ─── User Service ───────────────────────────────────────────────
         - id: user-service
-          uri: http://user-service:8081
+          uri: http://localhost:8081/api/users
           predicates:
             - Path=/api/users/**
-          filters:
-            - RewritePath=/api/users/(?<remaining>.*), /${remaining}
 
         # ─── Search Service ─────────────────────────────────────────────
         - id: search-service
-          uri: http://search-service:8082
+          uri: http://localhost:8083/api/search
           predicates:
             - Path=/api/search/**
-          filters:
-            - RewritePath=/api/search/(?<remaining>.*), /${remaining}
 
         # ─── Transaction (Order) Service ─────────────────────────────────
         - id: transaction-service
-          uri: http://transaction-service:8082
+          uri: http://localhost:8082/api/transactions
           predicates:
             - Path=/api/orders/**
-          filters:
-            - RewritePath=/api/orders/(?<remaining>.*), /${remaining}
 
         # ─── Admin Service ──────────────────────────────────────────────
-        - id: admin-service
-          uri: http://admin-service:8084
+        - id: admin-service-admins
+          uri: http://localhost:8084/api/admins
           predicates:
-            - Path=/api/admin/**
-          filters:
-            - RewritePath=/api/admin/(?<remaining>.*), /${remaining}
+            - Path=/api/admins/**
+            
+        - id: admin-service-products
+          uri: http://localhost:8084/api/products
+          predicates:
+            - Path=/api/products/**
+            
+        - id: admin-service-promotions
+          uri: http://localhost:8084/api/promotions
+          predicates:
+            - Path=/api/promotions/**
