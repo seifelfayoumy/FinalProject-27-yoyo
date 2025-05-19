@@ -1,6 +1,5 @@
-package com.example.TransactionService.config;
+package com.example.AdminService.config;
 
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -15,41 +14,41 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
-
-    @Value("${rabbitmq.exchange.name}")
-    private String exchangeName;
     
     @Value("${rabbitmq.queue.stock-update}")
     private String stockUpdateQueueName;
     
-    @Value("${rabbitmq.routing.key.stock-update}")
-    private String stockUpdateRoutingKey;
-    
     @Value("${rabbitmq.queue.refund}")
     private String refundQueueName;
     
-    @Value("${rabbitmq.routing.key.refund}")
+    @Value("${rabbitmq.exchange.name:stock-exchange}")
+    private String exchangeName;
+    
+    @Value("${rabbitmq.routing.key.stock-update:stock.update}")
+    private String stockUpdateRoutingKey;
+    
+    @Value("${rabbitmq.routing.key.refund:refund.update}")
     private String refundRoutingKey;
     
-    // Exchange
+    // Create stock update queue
+    @Bean
+    public Queue stockUpdateQueue() {
+        return new Queue(stockUpdateQueueName, true);
+    }
+    
+    // Create refund queue
+    @Bean
+    public Queue refundQueue() {
+        return new Queue(refundQueueName, true);
+    }
+    
+    // Create exchange
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(exchangeName);
     }
     
-    // Queue for stock updates
-    @Bean
-    public Queue stockUpdateQueue() {
-        return new Queue(stockUpdateQueueName);
-    }
-    
-    // Queue for refunds
-    @Bean
-    public Queue refundQueue() {
-        return new Queue(refundQueueName);
-    }
-    
-    // Binding between exchange and stock update queue
+    // Bind stock update queue to exchange
     @Bean
     public Binding stockUpdateBinding(Queue stockUpdateQueue, TopicExchange exchange) {
         return BindingBuilder
@@ -58,7 +57,7 @@ public class RabbitMQConfig {
                 .with(stockUpdateRoutingKey);
     }
     
-    // Binding between exchange and refund queue
+    // Bind refund queue to exchange
     @Bean
     public Binding refundBinding(Queue refundQueue, TopicExchange exchange) {
         return BindingBuilder
@@ -67,15 +66,13 @@ public class RabbitMQConfig {
                 .with(refundRoutingKey);
     }
     
-    // JSON message converter
     @Bean
     public MessageConverter converter() {
         return new Jackson2JsonMessageConverter();
     }
     
-    // RabbitTemplate with JSON conversion
     @Bean
-    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(converter());
         return rabbitTemplate;
