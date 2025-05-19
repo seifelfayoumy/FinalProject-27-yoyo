@@ -19,6 +19,7 @@ import com.example.TransactionService.model.Transaction;
 import com.example.TransactionService.service.TransactionService;
 
 import lombok.RequiredArgsConstructor;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -29,19 +30,25 @@ public class TransactionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> create(@RequestBody Transaction tx) {
+    public ResponseEntity<?> create(@RequestBody Transaction tx,
+                                    @RequestParam(value = "promoCode", required = false) String promoCode) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.create(tx));
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.create(tx, promoCode));
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (IllegalStateException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("error", "An unexpected error occurred");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable Long id) {
@@ -166,4 +173,6 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+
 }

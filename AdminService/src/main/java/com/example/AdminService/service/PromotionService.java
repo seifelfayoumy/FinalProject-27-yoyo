@@ -27,7 +27,6 @@ public class PromotionService {
                 "Promotion name '" + promotion.getName() + "' already created"
             );
         }
-        
         promotion.setId(UUID.randomUUID());
 
         if (promotion.getType() == PromotionType.CART_PROMOCODE &&
@@ -75,7 +74,7 @@ public class PromotionService {
     }
 
 
-    public ResponseEntity<String> applyPromo(String promoCode, Map<UUID, Double> products) {
+    public ResponseEntity<String> applyPromo(String promoCode, double total ) {
         Optional<Promotion> promoOpt = promotionRepository.findByName(promoCode);
 
         if (promoOpt.isEmpty()) {
@@ -93,41 +92,41 @@ public class PromotionService {
         }
 
         if (p.getType() == PromotionType.CART_PROMOCODE) {
-            double total = products.values().stream().mapToDouble(Double::doubleValue).sum();
+//            double total = products.values().stream().mapToDouble(Double::doubleValue).sum();
             if (total <= 0) {
                 return ResponseEntity.badRequest().body("Product list is empty. Cannot apply cart promotion.");
             }
             DiscountStrategy strategy = new CartDiscountStrategy(p.getDiscountValue());
             double discounted = strategy.applyDiscount(total);
             return ResponseEntity.ok("Cart promo applied successfully. New total: " + discounted);
-
-        } else if (p.getType() == PromotionType.ITEM_DISCOUNT) {
-            Map<UUID, Double> discountedItems = new HashMap<>();
-            double newTotal = 0;
-
-            for (Map.Entry<UUID, Double> entry : products.entrySet()) {
-                UUID productId = entry.getKey();
-                double price = entry.getValue();
-
-                if (p.getApplicableProductIds().contains(productId)) {
-                    DiscountStrategy strategy = new ItemDiscountStrategy(p.getDiscountValue());
-                    double discounted = strategy.applyDiscount(price);
-                    discountedItems.put(productId, discounted);
-                    newTotal += discounted;
-                } else {
-                    newTotal += price;
-                }
-            }
-
-            if (discountedItems.isEmpty()) {
-                return ResponseEntity.badRequest().body("No products in list are eligible for this promo code");
-            }
-
-            String appliedTo = discountedItems.keySet().stream().map(UUID::toString).collect(Collectors.joining(", "));
-            return ResponseEntity.ok("Item promo applied to products: [" + appliedTo + "]. New total: " + newTotal);
         }
+//        } else if (p.getType() == PromotionType.ITEM_DISCOUNT) {
+//            Map<UUID, Double> discountedItems = new HashMap<>();
+//            double newTotal = 0;
+//
+//            for (Map.Entry<UUID, Double> entry : products.entrySet()) {
+//                UUID productId = entry.getKey();
+//                double price = entry.getValue();
+//
+//                if (p.getApplicableProductIds().contains(productId)) {
+//                    DiscountStrategy strategy = new ItemDiscountStrategy(p.getDiscountValue());
+//                    double discounted = strategy.applyDiscount(price);
+//                    discountedItems.put(productId, discounted);
+//                    newTotal += discounted;
+//                } else {
+//                    newTotal += price;
+//                }
+//            }
+//
+//            if (discountedItems.isEmpty()) {
+//                return ResponseEntity.badRequest().body("No products in list are eligible for this promo code");
+//            }
+//
+//            String appliedTo = discountedItems.keySet().stream().map(UUID::toString).collect(Collectors.joining(", "));
+//            return ResponseEntity.ok("Item promo applied to products: [" + appliedTo + "]. New total: " + newTotal);
+//        }
         else if(p.getType() == PromotionType.FIXED_AMOUNT) {
-            double total = products.values().stream().mapToDouble(Double::doubleValue).sum();
+//            double total = products.values().stream().mapToDouble(Double::doubleValue).sum();
             if (total <= 0) {
                 return ResponseEntity.badRequest().body("Product list is empty. Cannot apply fixed amount promotion.");
             }
