@@ -25,7 +25,7 @@ public class PromotionController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity
                     .badRequest()
-                    .body(ex.getMessage());
+                    .body("promoCode name already exists");
         }
     }
 
