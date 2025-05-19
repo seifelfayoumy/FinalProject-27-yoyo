@@ -1,12 +1,7 @@
-# ===== build stage =====
-FROM maven:3.9.8-eclipse-temurin-21 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn -q package -DskipTests
+FROM openjdk:25-ea-4-jdk-oraclelinux9
 
-# ===== runtime stage =====
-FROM eclipse-temurin:21-jre
-COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8082
-ENTRYPOINT ["java","-jar","/app.jar"]
+WORKDIR /app
+COPY target/*.jar /target/app.jar
+
+EXPOSE 8080
+CMD ["java", "-jar", "/target/app.jar"]
