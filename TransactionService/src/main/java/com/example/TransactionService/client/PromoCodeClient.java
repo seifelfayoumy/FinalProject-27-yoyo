@@ -1,17 +1,13 @@
 package com.example.TransactionService.client;
 
-
-
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Map;
-import java.util.UUID;
-
-@FeignClient(name = "admin-service", url = "http://localhost:8084/api/promotions")
+@FeignClient(name = "admin-service", url = "${admin.service.url}/api/promotions")
 public interface PromoCodeClient {
 
     @PostMapping("/apply")
     String applyPromo(@RequestParam("promoCode") String promoCode,
-                      @RequestBody Map<UUID, Double> products);
+                      @RequestParam("total") double total);
 }
