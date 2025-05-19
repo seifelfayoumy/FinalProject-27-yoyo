@@ -25,7 +25,14 @@ public class Promotion {
     public Promotion() {
         this.id = UUID.randomUUID();
     }
-
+    public Promotion(String name, PromotionType type, double discountValue) {
+        this.name = name;
+        this.type = type;
+        this.discountValue = discountValue;
+        this.startDate = LocalDate.of(2025, 5, 1);
+        this.endDate = LocalDate.of(2025, 12, 1);
+        this.active = true;
+    }
     public Promotion(UUID id, String name, PromotionType type, double discountValue,
                      LocalDate startDate, LocalDate endDate, boolean active,
                      List<UUID> applicableProductIds) {
