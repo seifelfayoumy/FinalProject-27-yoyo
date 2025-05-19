@@ -1,6 +1,14 @@
 package com.example.TransactionService.service;
 
-import java.util.*;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.TransactionService.client.PromoCodeClient;
 import com.example.TransactionService.client.TokenValidationResponse;
@@ -14,12 +22,9 @@ import com.example.TransactionService.messaging.StockUpdatePublisher;
 import com.example.TransactionService.model.Transaction;
 import com.example.TransactionService.repository.TransactionRepository;
 import com.example.TransactionService.strategy.PaymentStrategy;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +42,9 @@ public class TransactionService {
     private final RefundPublisher refundPublisher;
 
     public String applyPromoToCart(String promoCode, Map<UUID, Double> products) {
-        return promoCodeClient.applyPromo(promoCode, products);
+        // Calculate total from the product map
+        double total = products.values().stream().mapToDouble(Double::doubleValue).sum();
+        return promoCodeClient.applyPromo(promoCode, total);
     }
 
     public Transaction create(Transaction tx, String promoCode) {
@@ -64,27 +71,46 @@ public class TransactionService {
             }
         }
 
-        // ✅ Apply promo code passed from controller
+        //  Apply promo code passed from controller
         if (promoCode != null && !promoCode.isBlank()) {
             try {
-                Map<UUID, Double> productMap = new HashMap<>();
-                for (String entry : tx.getProducts()) {
-                    String[] parts = entry.split("\\s+");
+                // Calculate total amount from products
+                double total = tx.getAmount().doubleValue();
+                System.out.println("PROMO DEBUG: Original amount before discount: " + total);
+                System.out.println("PROMO DEBUG: Applying promo code: " + promoCode);
+                
+                // Make the API call to apply promo
+                String promoResult = promoCodeClient.applyPromo(promoCode, total);
+                System.out.println("PROMO DEBUG: Raw response from promo service: " + promoResult);
+
+                // Check if response contains discount info
+                if (promoResult != null && promoResult.contains("New total:")) {
+                    // Extract number (discounted amount) from the returned string
+                    String[] parts = promoResult.split("New total:");
                     if (parts.length == 2) {
-                        UUID productId = UUID.fromString(parts[0]);
-                        double price = Double.parseDouble(parts[1]);
-                        productMap.put(productId, price);
+                        String amountStr = parts[1].trim(); // e.g. "82.50"
+                        try {
+                            BigDecimal discountedAmount = new BigDecimal(amountStr);
+                            System.out.println("PROMO DEBUG: Successfully parsed discount amount: " + discountedAmount);
+                            
+                            // Set the discounted amount and update status
+                            tx.setAmount(discountedAmount);
+                            tx.setStatus("DISCOUNTED");
+                            System.out.println("PROMO DEBUG: Transaction updated with discounted amount");
+                        } catch (NumberFormatException e) {
+                            System.err.println("PROMO ERROR: Failed to parse discount amount: " + amountStr + " - " + e.getMessage());
+                        }
+                    } else {
+                        System.err.println("PROMO ERROR: Unexpected promo result format: " + promoResult);
                     }
+                } else {
+                    System.err.println("PROMO ERROR: Response doesn't contain 'New total:' format: " + promoResult);
                 }
-
-                String promoResult = promoCodeClient.applyPromo(promoCode, productMap);
-                System.out.println("Promo applied: " + promoResult);
-
             } catch (Exception e) {
-                System.err.println("Failed to apply promo: " + e.getMessage());
+                System.err.println("PROMO ERROR: Exception while applying promo: " + e.getMessage());
+                e.printStackTrace();
             }
         }
-
         return repo.save(tx);
     }
 
@@ -115,6 +141,11 @@ public class TransactionService {
 
         Transaction tx = repo.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("Transaction not found with id: " + id));
+                
+        // Check if transaction is already paid
+        if ("PAID".equalsIgnoreCase(tx.getStatus())) {
+            throw new IllegalStateException("Transaction has already been paid");
+        }
 
         TokenValidationResponse validationResponse = userClient.validateToken(token);
         if (!validationResponse.isSuccess()) {
