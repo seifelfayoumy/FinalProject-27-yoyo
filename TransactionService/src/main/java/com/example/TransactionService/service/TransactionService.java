@@ -12,11 +12,13 @@ import com.example.TransactionService.client.TokenValidationResponse;
 import com.example.TransactionService.client.UserClient;
 import com.example.TransactionService.command.CommandInvoker;
 import com.example.TransactionService.command.ViewOrderHistoryCommand;
+import com.example.TransactionService.messaging.RefundMessage;
+import com.example.TransactionService.messaging.RefundPublisher;
+import com.example.TransactionService.messaging.StockUpdateMessage;
+import com.example.TransactionService.messaging.StockUpdatePublisher;
 import com.example.TransactionService.model.Transaction;
 import com.example.TransactionService.repository.TransactionRepository;
 import com.example.TransactionService.strategy.PaymentStrategy;
-import com.example.TransactionService.messaging.StockUpdatePublisher;
-import com.example.TransactionService.messaging.StockUpdateMessage;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class TransactionService {
     private final ViewOrderHistoryCommand viewOrderHistoryCommand;
     private final StockValidationService stockValidationService;
     private final StockUpdatePublisher stockUpdatePublisher;
+    private final RefundPublisher refundPublisher;
 
     public Transaction create(Transaction tx) {
         // Get the token from Authorization header
@@ -175,8 +178,36 @@ public class TransactionService {
 
         strategy.refund(tx);
         tx.setStatus("REFUNDED");
+        
+        // Save the transaction first to ensure it's refunded in our database
+        Transaction refundedTx = repo.save(tx);
+        
+        // Send refund messages for each product to increase stock
+        if (tx.getProducts() != null && !tx.getProducts().isEmpty()) {
+            for (String productEntry : tx.getProducts()) {
+                String[] parts = productEntry.split("\\s+");
+                if (parts.length == 2) {
+                    try {
+                        String productId = parts[0];
+                        int quantity = Integer.parseInt(parts[1]);
+                        
+                        // Create and send refund message
+                        RefundMessage message = RefundMessage.builder()
+                                .productId(productId)
+                                .quantity(quantity)
+                                .refundId(refundedTx.getId().toString())
+                                .build();
+                        
+                        refundPublisher.sendRefundMessage(message);
+                    } catch (Exception e) {
+                        // Log error but continue with other products
+                        System.err.println("Failed to send refund message for product: " + productEntry + " - " + e.getMessage());
+                    }
+                }
+            }
+        }
 
-        return repo.save(tx);
+        return refundedTx;
     }
 
     public List<Transaction> getTransactionsByUser(Long userId) {
