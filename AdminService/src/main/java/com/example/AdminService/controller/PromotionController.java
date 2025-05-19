@@ -25,7 +25,7 @@ public class PromotionController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity
                     .badRequest()
-                    .body("promoCode name already exists");
+                    .body(ex.getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ public class PromotionController {
 
 
     @PostMapping("/apply")
-    public ResponseEntity<String> applyPromo(@RequestParam String promoCode, @RequestBody Map<UUID, Double> products) {
-        return promotionService.applyPromo(promoCode, products);
+    public ResponseEntity<String> applyPromo(@RequestParam String promoCode,@RequestParam double total ) {
+        return promotionService.applyPromo(promoCode, total);
     }
 }
