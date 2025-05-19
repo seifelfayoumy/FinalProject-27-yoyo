@@ -43,6 +43,8 @@ spec:
             - name: SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0
               value: Path=/api/orders/**
             - name: SPRING_CLOUD_GATEWAY_ROUTES_2_FILTERS_0
+              value: RewritePath=/api/orders$, /api/transactions
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_FILTERS_1
               value: RewritePath=/api/orders/(?<segment>.*), /api/transactions/$\{segment}
 
             - name: SPRING_CLOUD_GATEWAY_ROUTES_3_ID
