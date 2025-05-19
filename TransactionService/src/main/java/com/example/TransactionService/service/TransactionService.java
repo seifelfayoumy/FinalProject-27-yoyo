@@ -7,6 +7,8 @@ import com.example.TransactionService.client.TokenValidationResponse;
 import com.example.TransactionService.client.UserClient;
 import com.example.TransactionService.command.CommandInvoker;
 import com.example.TransactionService.command.ViewOrderHistoryCommand;
+import com.example.TransactionService.messaging.RefundMessage;
+import com.example.TransactionService.messaging.RefundPublisher;
 import com.example.TransactionService.messaging.StockUpdateMessage;
 import com.example.TransactionService.messaging.StockUpdatePublisher;
 import com.example.TransactionService.model.Transaction;
@@ -32,6 +34,7 @@ public class TransactionService {
     private final ViewOrderHistoryCommand viewOrderHistoryCommand;
     private final StockValidationService stockValidationService;
     private final StockUpdatePublisher stockUpdatePublisher;
+    private final RefundPublisher refundPublisher;
 
     public String applyPromoToCart(String promoCode, Map<UUID, Double> products) {
         return promoCodeClient.applyPromo(promoCode, products);
@@ -61,7 +64,7 @@ public class TransactionService {
             }
         }
 
-        //  Apply promo code passed from controller
+        // ✅ Apply promo code passed from controller
         if (promoCode != null && !promoCode.isBlank()) {
             try {
                 Map<UUID, Double> productMap = new HashMap<>();
@@ -76,7 +79,6 @@ public class TransactionService {
 
                 String promoResult = promoCodeClient.applyPromo(promoCode, productMap);
                 System.out.println("Promo applied: " + promoResult);
-                tx.setStatus("DISCOUNTED");
 
             } catch (Exception e) {
                 System.err.println("Failed to apply promo: " + e.getMessage());
@@ -86,7 +88,22 @@ public class TransactionService {
         return repo.save(tx);
     }
 
+    public Transaction get(Long id) {
+        return repo.findById(id).orElseThrow();
+    }
 
+    public List<Transaction> list() {
+        return repo.findAll();
+    }
+
+    public Transaction update(Long id, Transaction tx) {
+        tx.setId(id);
+        return repo.save(tx);
+    }
+
+    public void delete(Long id) {
+        repo.deleteById(id);
+    }
 
     public Transaction processPayment(Long id) {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
@@ -161,24 +178,36 @@ public class TransactionService {
         PaymentStrategy strategy = paymentStrategies.getOrDefault(tx.getPaymentMethod(), paymentStrategies.get("CARD"));
         strategy.refund(tx);
         tx.setStatus("REFUNDED");
+        
+        // Save the transaction first to ensure it's refunded in our database
+        Transaction refundedTx = repo.save(tx);
+        
+        // Send refund messages for each product to increase stock
+        if (tx.getProducts() != null && !tx.getProducts().isEmpty()) {
+            for (String productEntry : tx.getProducts()) {
+                String[] parts = productEntry.split("\\s+");
+                if (parts.length == 2) {
+                    try {
+                        String productId = parts[0];
+                        int quantity = Integer.parseInt(parts[1]);
+                        
+                        // Create and send refund message
+                        RefundMessage message = RefundMessage.builder()
+                                .productId(productId)
+                                .quantity(quantity)
+                                .refundId(refundedTx.getId().toString())
+                                .build();
+                        
+                        refundPublisher.sendRefundMessage(message);
+                    } catch (Exception e) {
+                        // Log error but continue with other products
+                        System.err.println("Failed to send refund message for product: " + productEntry + " - " + e.getMessage());
+                    }
+                }
+            }
+        }
 
-        return repo.save(tx);
-    }
-    public Transaction get(Long id) {
-        return repo.findById(id).orElseThrow();
-    }
-
-    public List<Transaction> list() {
-        return repo.findAll();
-    }
-
-    public Transaction update(Long id, Transaction tx) {
-        tx.setId(id);
-        return repo.save(tx);
-    }
-
-    public void delete(Long id) {
-        repo.deleteById(id);
+        return refundedTx;
     }
 
     public List<Transaction> getTransactionsByUser(Long userId) {
