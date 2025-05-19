@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigateway-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apigateway-service
+  template:
+    metadata:
+      labels:
+        app: apigateway-service
+    spec:
+      containers:
+        - name: apigateway-service
+          image: seifelfayoumy/apigateway
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+            - name: SPRING_MAIN_WEB_APPLICATION_TYPE
+              value: reactive
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_ID
+              value: user-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_URI
+              value: http://user-service:8081/api/users
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0
+              value: Path=/api/users/**
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_ID
+              value: search-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_URI
+              value: http://search-service:8083/api/search
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0
+              value: Path=/api/search/**
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_ID
+              value: transaction-service
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_URI
+              value: http://transaction-service:8082/api/transactions
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0
+              value: Path=/api/orders/**
+
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_ID
+              value: admin-service-admins
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_URI
+              value: http://admin-service:8084/api/admins
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0
+              value: Path=/api/admins/**
+              
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_ID
+              value: admin-service-products
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_URI
+              value: http://admin-service:8084/api/products
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0
+              value: Path=/api/products/**
+              
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_ID
+              value: admin-service-promotions
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_URI
+              value: http://admin-service:8084/api/promotions
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_5_PREDICATES_0
+              value: Path=/api/promotions/**
