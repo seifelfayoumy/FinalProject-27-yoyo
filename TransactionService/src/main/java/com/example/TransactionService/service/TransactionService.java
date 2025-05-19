@@ -61,7 +61,7 @@ public class TransactionService {
             }
         }
 
-        //  Apply promo code passed from controller
+        // ✅ Apply promo code passed from controller
         if (promoCode != null && !promoCode.isBlank()) {
             try {
                 Map<UUID, Double> productMap = new HashMap<>();
@@ -86,7 +86,22 @@ public class TransactionService {
         return repo.save(tx);
     }
 
+    public Transaction get(Long id) {
+        return repo.findById(id).orElseThrow();
+    }
 
+    public List<Transaction> list() {
+        return repo.findAll();
+    }
+
+    public Transaction update(Long id, Transaction tx) {
+        tx.setId(id);
+        return repo.save(tx);
+    }
+
+    public void delete(Long id) {
+        repo.deleteById(id);
+    }
 
     public Transaction processPayment(Long id) {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
