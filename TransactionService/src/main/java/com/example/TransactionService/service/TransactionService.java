@@ -79,7 +79,6 @@ public class TransactionService {
 
                 String promoResult = promoCodeClient.applyPromo(promoCode, productMap);
                 System.out.println("Promo applied: " + promoResult);
-                tx.setStatus("DISCOUNTED");
 
             } catch (Exception e) {
                 System.err.println("Failed to apply promo: " + e.getMessage());
