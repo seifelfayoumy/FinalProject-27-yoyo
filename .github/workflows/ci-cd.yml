@@ -105,17 +105,21 @@ jobs:
 
     - name: Configure kubectl
       run: |
-        echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig.yaml
-        export KUBECONFIG=kubeconfig.yaml
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+        kubectl config get-contexts
+        kubectl config current-context
 
     - name: Deploy to Kubernetes
       run: |
         cd k8s
-        # Apply configurations from each subdirectory with validation disabled
+        # Apply configurations from each subdirectory
         for dir in */; do
           if [ -d "$dir" ]; then
             echo "Applying configurations in $dir"
             kubectl apply -f "$dir" --validate=false
           fi
         done
-        kubectl get pods 
+        kubectl get pods
+        kubectl get services 
