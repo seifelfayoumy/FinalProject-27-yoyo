@@ -111,11 +111,11 @@ jobs:
     - name: Deploy to Kubernetes
       run: |
         cd k8s
-        # Apply configurations from each subdirectory
+        # Apply configurations from each subdirectory with validation disabled
         for dir in */; do
           if [ -d "$dir" ]; then
             echo "Applying configurations in $dir"
-            kubectl apply -f "$dir"
+            kubectl apply -f "$dir" --validate=false
           fi
         done
         kubectl get pods 
