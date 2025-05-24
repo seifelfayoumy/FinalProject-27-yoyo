@@ -26,7 +26,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Build and Test ${{ matrix.service }}
+    - name: Build ${{ matrix.service }}
       working-directory: ./${{ matrix.service }}
       run: |
         mvn clean package -DskipTests
@@ -86,40 +86,32 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Update k8s manifests
-      run: |
-        cd k8s
-        # Update image tags in deployment files for each service
-        for service in admin user transaction search apigateway; do
-          if [ -d "$service" ]; then
-            if [ -f "$service/$service-deployment.yaml" ]; then
-              sed -i "s|image: .*${service}:.*|image: ${{ env.DOCKER_USERNAME }}/${service}:${{ github.sha }}|g" "$service/$service-deployment.yaml"
-            fi
-          fi
-        done
+    - name: Set up Minikube
+      uses: medyagh/setup-minikube@master
 
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-
-    - name: Configure kubectl
+    - name: Start Minikube
       run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-        chmod 600 $HOME/.kube/config
-        kubectl config get-contexts
-        kubectl config current-context
+        minikube start
+        minikube status
 
     - name: Deploy to Kubernetes
       run: |
         cd k8s
-        # Apply configurations from each subdirectory
+        # Apply configurations for each service
         for dir in */; do
           if [ -d "$dir" ]; then
-            echo "Applying configurations in $dir"
-            kubectl apply -f "$dir" --validate=false
+            echo "Deploying $dir"
+            kubectl apply -f "$dir"
           fi
         done
+        
+        # Wait for pods to be ready
+        kubectl wait --for=condition=ready pod --all --timeout=300s
+        
+        # Show deployment status
+        echo "Deployed Services:"
+        kubectl get services
+        echo "Deployed Pods:"
         kubectl get pods
-        kubectl get services 
+        echo "Deployed Deployments:"
+        kubectl get deployments 
