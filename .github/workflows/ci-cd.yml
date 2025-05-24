@@ -52,16 +52,21 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: Convert service name to lowercase
+      id: lowercase
+      run: |
+        echo "SERVICE_LOWERCASE=$(echo ${{ matrix.service }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
         context: ./${{ matrix.service }}
         push: true
         tags: |
-          ${{ env.DOCKER_USERNAME }}/${{ matrix.service }}:latest
-          ${{ env.DOCKER_USERNAME }}/${{ matrix.service }}:${{ github.sha }}
-        cache-from: type=registry,ref=${{ env.DOCKER_USERNAME }}/${{ matrix.service }}:buildcache
-        cache-to: type=registry,ref=${{ env.DOCKER_USERNAME }}/${{ matrix.service }}:buildcache,mode=max
+          ${{ env.DOCKER_USERNAME }}/${{ env.SERVICE_LOWERCASE }}:latest
+          ${{ env.DOCKER_USERNAME }}/${{ env.SERVICE_LOWERCASE }}:${{ github.sha }}
+        cache-from: type=registry,ref=${{ env.DOCKER_USERNAME }}/${{ env.SERVICE_LOWERCASE }}:buildcache
+        cache-to: type=registry,ref=${{ env.DOCKER_USERNAME }}/${{ env.SERVICE_LOWERCASE }}:buildcache,mode=max
 
   deploy:
     needs: docker-build-push
@@ -76,8 +81,9 @@ jobs:
         cd k8s
         # Update image tags in deployment files
         for service in AdminService UserService TransactionService SearchService apigateway; do
-          if [ -f "${service,,}-deployment.yaml" ]; then
-            sed -i "s|image: .*${service,,}:.*|image: ${{ env.DOCKER_USERNAME }}/${service}:${{ github.sha }}|g" "${service,,}-deployment.yaml"
+          lowercase_service=$(echo $service | tr '[:upper:]' '[:lower:]')
+          if [ -f "${lowercase_service}-deployment.yaml" ]; then
+            sed -i "s|image: .*${lowercase_service}:.*|image: ${{ env.DOCKER_USERNAME }}/${lowercase_service}:${{ github.sha }}|g" "${lowercase_service}-deployment.yaml"
           fi
         done
 
