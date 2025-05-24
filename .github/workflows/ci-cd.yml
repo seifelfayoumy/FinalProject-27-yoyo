@@ -92,11 +92,9 @@ jobs:
         # Update image tags in deployment files for each service
         for service in admin user transaction search apigateway; do
           if [ -d "$service" ]; then
-            for file in $service/*deployment.yaml; do
-              if [ -f "$file" ]; then
-                sed -i "s|image: .*${service}:.*|image: ${{ env.DOCKER_USERNAME }}/${service}:${{ github.sha }}|g" "$file"
-              fi
-            done
+            if [ -f "$service/$service-deployment.yaml" ]; then
+              sed -i "s|image: .*${service}:.*|image: ${{ env.DOCKER_USERNAME }}/${service}:${{ github.sha }}|g" "$service/$service-deployment.yaml"
+            fi
           fi
         done
 
