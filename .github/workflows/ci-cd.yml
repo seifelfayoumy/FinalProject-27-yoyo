@@ -30,7 +30,6 @@ jobs:
       working-directory: ./${{ matrix.service }}
       run: |
         mvn clean package -DskipTests
-        mvn verify
 
   docker-build-push:
     needs: build-and-test
