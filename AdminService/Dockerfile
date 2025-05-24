@@ -1,4 +1,4 @@
-FROM openjdk:25-ea-4-jdk-oraclelinux9
+FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 COPY target/*.jar /target/app.jar

@@ -19,11 +19,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up JDK 25
+    - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        java-version: '25-ea'
-        distribution: 'oracle'
+        java-version: '17'
+        distribution: 'temurin'
         cache: maven
 
     - name: Build and Test ${{ matrix.service }}
@@ -43,11 +43,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up JDK 25
+    - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        java-version: '25-ea'
-        distribution: 'oracle'
+        java-version: '17'
+        distribution: 'temurin'
         cache: maven
 
     - name: Build with Maven
@@ -78,8 +78,6 @@ jobs:
           ${{ env.DOCKER_USERNAME }}/${{ env.SERVICE_LOWERCASE }}:${{ github.sha }}
         cache-from: type=registry,ref=${{ env.DOCKER_USERNAME }}/${{ env.SERVICE_LOWERCASE }}:buildcache
         cache-to: type=registry,ref=${{ env.DOCKER_USERNAME }}/${{ env.SERVICE_LOWERCASE }}:buildcache,mode=max
-        build-args: |
-          JAVA_VERSION=25-ea
 
   deploy:
     needs: docker-build-push
