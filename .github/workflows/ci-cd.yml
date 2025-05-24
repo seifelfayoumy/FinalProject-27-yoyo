@@ -89,11 +89,12 @@ jobs:
     - name: Update k8s manifests
       run: |
         cd k8s
-        # Update image tags in deployment files
-        for service in AdminService UserService TransactionService SearchService apigateway; do
-          lowercase_service=$(echo $service | tr '[:upper:]' '[:lower:]')
-          if [ -f "${lowercase_service}-deployment.yaml" ]; then
-            sed -i "s|image: .*${lowercase_service}:.*|image: ${{ env.DOCKER_USERNAME }}/${lowercase_service}:${{ github.sha }}|g" "${lowercase_service}-deployment.yaml"
+        # Update image tags in deployment files for each service
+        for service in admin user transaction search apigateway; do
+          if [ -d "$service" ]; then
+            if [ -f "$service/$service-deployment.yaml" ]; then
+              sed -i "s|image: .*${service}:.*|image: ${{ env.DOCKER_USERNAME }}/${service}:${{ github.sha }}|g" "$service/$service-deployment.yaml"
+            fi
           fi
         done
 
@@ -110,5 +111,11 @@ jobs:
     - name: Deploy to Kubernetes
       run: |
         cd k8s
-        kubectl apply -f .
+        # Apply configurations from each subdirectory
+        for dir in */; do
+          if [ -d "$dir" ]; then
+            echo "Applying configurations in $dir"
+            kubectl apply -f "$dir"
+          fi
+        done
         kubectl get pods 
