@@ -91,27 +91,64 @@ jobs:
 
     - name: Start Minikube
       run: |
-        minikube start
+        minikube start --memory=4096 --cpus=2
         minikube status
 
-    - name: Deploy to Kubernetes
+    - name: Deploy Infrastructure
       run: |
         cd k8s
-        # Apply configurations for each service
-        for dir in */; do
+        # Deploy and wait for each infrastructure component
+        for dir in mongo redis rabbitmq postgres-user postgres-transaction; do
           if [ -d "$dir" ]; then
-            echo "Deploying $dir"
+            echo "Deploying infrastructure: $dir"
             kubectl apply -f "$dir"
+            echo "Waiting for $dir pods..."
+            sleep 10
+            kubectl get pods | grep $dir
           fi
         done
         
-        # Wait for pods to be ready
-        kubectl wait --for=condition=ready pod --all --timeout=300s
-        
-        # Show deployment status
-        echo "Deployed Services:"
-        kubectl get services
-        echo "Deployed Pods:"
+        # Give infrastructure time to initialize
+        echo "Waiting for infrastructure to initialize..."
+        sleep 30
         kubectl get pods
-        echo "Deployed Deployments:"
-        kubectl get deployments 
+
+    - name: Deploy Services
+      run: |
+        cd k8s
+        # Deploy services one by one
+        for dir in admin user transaction search apigateway; do
+          if [ -d "$dir" ]; then
+            echo "Deploying service: $dir"
+            kubectl apply -f "$dir"
+            echo "Waiting for $dir service to start..."
+            sleep 10
+            kubectl get pods | grep $dir
+            
+            # Check logs if pods aren't ready
+            pods=$(kubectl get pods | grep $dir | awk '{print $1}')
+            for pod in $pods; do
+              echo "Checking status of $pod"
+              kubectl describe pod $pod
+              echo "Logs of $pod"
+              kubectl logs $pod --tail=50 || true
+            done
+          fi
+        done
+
+    - name: Verify Deployment
+      run: |
+        echo "All Deployments:"
+        kubectl get deployments
+        echo "\nAll Services:"
+        kubectl get services
+        echo "\nAll Pods:"
+        kubectl get pods
+        
+        # Check status of non-ready pods
+        echo "\nChecking non-ready pods:"
+        kubectl get pods | grep -v "Running" | grep -v "NAME" || true
+        
+        # Show events
+        echo "\nKubernetes Events:"
+        kubectl get events --sort-by='.metadata.creationTimestamp' | tail -n 20 
